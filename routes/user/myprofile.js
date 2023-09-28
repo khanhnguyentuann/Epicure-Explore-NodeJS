@@ -31,7 +31,7 @@ router.delete('/:userId/:recipeId', async (req, res) => {
 });
 
 async function getUserRecipes(userId) {
-    const userRecipes = await knex('recipes').where('user_id', userId);
+    const userRecipes = await knex('recipes').where('user_id', userId).orderBy('created_at', 'DESC');
 
     return await Promise.all(userRecipes.map(async (recipe) => {
         const [user, ingredients, tags, images] = await Promise.all([
@@ -95,6 +95,9 @@ async function deleteRecipe(recipeId) {
         await transaction('recipe_ingredients').where('recipe_id', recipeId).del();
         await transaction('recipe_tags').where('recipe_id', recipeId).del();
         await transaction('favorite_recipes').where('recipe_id', recipeId).del();
+        await transaction('comments').where('recipe_id', recipeId).del();
+        await transaction('recipe_likes').where('recipe_id', recipeId).del();
+        await transaction('recipe_images').where('recipe_id', recipeId).del();
         await transaction('recipes').where('id', recipeId).del();
     });
 }
