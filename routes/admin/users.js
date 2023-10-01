@@ -107,10 +107,17 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const { id } = req.params;
+        // Xóa các bản ghi tham chiếu từ các bảng khác
+        await knex('friendships').where({ user_id1: id }).orWhere({ user_id2: id }).del();
+        await knex('recipe_likes').where({ user_id: id }).del();
+        await knex('favorite_recipes').where({ user_id: id }).del();
+        await knex('comments').where({ user_id: id }).del();
+        await knex('recipes').where({ user_id: id }).del();
 
-        await knex('users').where({ id: id }).del();
+        // Sau đó mới xóa User
+        await knex('users').where({ id }).del();
 
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
@@ -118,5 +125,6 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: 'Error deleting user' });
     }
 });
+
 
 module.exports = router;
