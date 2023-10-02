@@ -8,7 +8,7 @@ const handleErrors = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Lấy tất cả công thức
+// Lấy tất cả công thức ( bài viết )
 router.get('/all', handleErrors(async (req, res) => {
     const { userId } = req.query;
 
@@ -31,14 +31,14 @@ router.get('/all', handleErrors(async (req, res) => {
         // Chuyển đổi chuỗi steps thành mảng
         recipe.steps = JSON.parse(recipe.steps);
 
-        const isLikedByCurrentUser = await knex('recipe_likes')
+        const isLikedByCurrentUser = await knex('post_likes_notifications')
             .where({
                 user_id: userId,
                 recipe_id: recipe.id,
             })
             .first();
 
-        const totalLikes = await knex('recipe_likes')
+        const totalLikes = await knex('post_likes_notifications')
             .where({ recipe_id: recipe.id })
             .count('* as count')
             .first();
@@ -69,7 +69,7 @@ router.get('/all', handleErrors(async (req, res) => {
     res.json(recipesWithInfo);
 }));
 
-// Xóa một công thức
+// Xóa một công thức ( bài viết )
 router.delete('/delete/:id', handleErrors(async (req, res) => {
     const { id: recipeId } = req.params;
     await knex.transaction(async transaction => {
@@ -77,14 +77,14 @@ router.delete('/delete/:id', handleErrors(async (req, res) => {
         await transaction('recipe_tags').where('recipe_id', recipeId).del();
         await transaction('favorite_recipes').where('recipe_id', recipeId).del();
         await transaction('comments').where('recipe_id', recipeId).del();
-        await transaction('recipe_likes').where('recipe_id', recipeId).del();
+        await transaction('post_likes_notifications').where('recipe_id', recipeId).del();
         await transaction('recipe_images').where('recipe_id', recipeId).del();
         await transaction('recipes').where('id', recipeId).del();
     });
     res.json({ message: 'Bài viết đã được xoá' });
 }));
 
-// Trả về danh sách tất cả bình luận cho một công thức.
+// Trả về danh sách tất cả bình luận cho một công thức ( bài viết ).
 router.get('/:recipeId/comments', handleErrors(async (req, res) => {
     const { recipeId } = req.params;
     const comments = await knex('comments')
@@ -101,24 +101,22 @@ router.post('/:recipeId/comments', handleErrors(async (req, res) => {
     res.status(201).send({ message: 'Comment added successfully' });
 }));
 
-// Xóa một bình luận dựa trên commentId.
-router.delete('/:recipeId/comments/:commentId', handleErrors(async (req, res) => {
-    const { commentId } = req.params;
-    await knex('comments').where('id', commentId).delete();
-    res.status(200).send({ message: 'Comment deleted successfully' });
-}));
-
 // Thích một công thức
 router.post('/like/:recipeId', handleErrors(async (req, res) => {
-    const { params: { recipeId }, body: { userId } } = req;
-    await knex('recipe_likes').insert({ user_id: userId, recipe_id: recipeId });
+    const { params: { recipeId }, body: { sender_id } } = req;
+    // Lấy user_id của người đã đăng công thức
+    const postOwner = await knex('recipes').select('user_id').where('id', recipeId).first();
+    await knex('post_likes_notifications').insert({ sender_id: sender_id, recipe_id: recipeId, user_id: postOwner.user_id });
     res.status(200).send({ message: 'Recipe liked successfully' });
 }));
 
 // Bỏ thích một công thức
 router.delete('/unlike/:recipeId', handleErrors(async (req, res) => {
-    const { params: { recipeId }, body: { userId } } = req;
-    await knex('recipe_likes').where({ user_id: userId, recipe_id: recipeId }).delete();
+    const { params: { recipeId }, body: { sender_id } } = req;
+
+    // Lấy user_id của người đã đăng công thức
+    const postOwner = await knex('recipes').select('user_id').where('id', recipeId).first();
+    await knex('post_likes_notifications').where({ sender_id: sender_id, recipe_id: recipeId, user_id: postOwner.user_id }).delete();
     res.status(200).send({ message: 'Recipe unliked successfully' });
 }));
 
