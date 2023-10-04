@@ -34,14 +34,14 @@ async function getUserRecipes(userId) {
                 .where('recipe_id', recipe.id)
         ]);
 
-        const isLikedByCurrentUser = await knex('recipe_likes')
+        const isLikedByCurrentUser = await knex('post_likes_notifications')
             .where({
                 user_id: userId,
                 recipe_id: recipe.id,
             })
             .first();
 
-        const totalLikes = await knex('recipe_likes')
+        const totalLikes = await knex('post_likes_notifications')
             .where({ recipe_id: recipe.id })
             .count('* as count')
             .first();

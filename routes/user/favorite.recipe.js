@@ -89,14 +89,14 @@ router.get('/:id', async (req, res) => {
         // Chuyển đổi chuỗi steps thành mảng
         recipe.steps = JSON.parse(recipe.steps);
 
-        const isLikedByCurrentUser = await knex('recipe_likes')
+        const isLikedByCurrentUser = await knex('post_likes_notifications')
             .where({
                 user_id: userId,
                 recipe_id: recipe.id,
             })
             .first();
 
-        const totalLikes = await knex('recipe_likes')
+        const totalLikes = await knex('post_likes_notifications')
             .where({ recipe_id: recipe.id })
             .count('* as count')
             .first();

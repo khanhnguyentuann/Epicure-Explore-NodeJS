@@ -50,14 +50,14 @@ async function getUserRecipes(userId) {
                 .where('recipe_id', recipe.id)
         ]);
 
-        const isLikedByCurrentUser = await knex('recipe_likes')
+        const isLikedByCurrentUser = await knex('post_likes_notifications')
             .where({
                 user_id: userId,
                 recipe_id: recipe.id,
             })
             .first();
 
-        const totalLikes = await knex('recipe_likes')
+        const totalLikes = await knex('post_likes_notifications')
             .where({ recipe_id: recipe.id })
             .count('* as count')
             .first();
@@ -96,7 +96,7 @@ async function deleteRecipe(recipeId) {
         await transaction('recipe_tags').where('recipe_id', recipeId).del();
         await transaction('favorite_recipes').where('recipe_id', recipeId).del();
         await transaction('comments').where('recipe_id', recipeId).del();
-        await transaction('recipe_likes').where('recipe_id', recipeId).del();
+        await transaction('post_likes_notifications').where('recipe_id', recipeId).del();
         await transaction('recipe_images').where('recipe_id', recipeId).del();
         await transaction('recipes').where('id', recipeId).del();
     });
