@@ -13,6 +13,8 @@ router.get('/all', handleErrors(async (req, res) => {
     const { userId } = req.query;
 
     const newfeedRecipes = await knex('recipes').select('*').orderBy('created_at', 'DESC');
+    console.log("Fetched recipes:", newfeedRecipes);
+
 
     const recipesWithInfo = await Promise.all(newfeedRecipes.map(async (recipe) => {
         const user = await knex('users').select('name', 'avatar').where('id', recipe.user_id).first();
@@ -33,7 +35,7 @@ router.get('/all', handleErrors(async (req, res) => {
 
         const isLikedByCurrentUser = await knex('post_likes_notifications')
             .where({
-                user_id: userId,
+                sender_id: userId,
                 recipe_id: recipe.id,
             })
             .first();
@@ -106,6 +108,13 @@ router.post('/like/:recipeId', handleErrors(async (req, res) => {
     const { params: { recipeId }, body: { sender_id } } = req;
     // Lấy user_id của người đã đăng công thức
     const postOwner = await knex('recipes').select('user_id').where('id', recipeId).first();
+
+    // Kiểm tra xem người dùng này đã thích bài viết này chưa
+    const existingLike = await knex('post_likes_notifications').where({ sender_id: sender_id, recipe_id: recipeId }).first();
+    if (existingLike) {
+        return res.status(400).send({ message: 'You already liked this recipe' });
+    }
+
     await knex('post_likes_notifications').insert({ sender_id: sender_id, recipe_id: recipeId, user_id: postOwner.user_id });
     res.status(200).send({ message: 'Recipe liked successfully' });
 }));
