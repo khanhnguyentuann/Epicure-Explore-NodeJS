@@ -21,6 +21,27 @@ router.get('/searchByTag', async (req, res) => {
     }
 });
 
+router.get('/searchByTitle', async (req, res) => {
+    const title = req.query.title;
+
+    // Tách từ khóa tìm kiếm thành các từ riêng lẻ và chuyển thành chữ thường
+    const keywords = title.toLowerCase().split(' ').map(word => `%${word}%`);
+
+    try {
+        // Tạo điều kiện tìm kiếm từ các từ khóa
+        const query = knex('recipes').select('id', 'name', 'preparationTime', 'difficulty');
+        keywords.forEach(keyword => {
+            query.andWhere(knex.raw('LOWER(name) LIKE ?', [keyword]));
+        });
+
+        const recipes = await query;
+
+        res.status(200).json({ recipes });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // Endpoint to get all tags
 router.get('/getAllTags', async (req, res) => {
     try {
