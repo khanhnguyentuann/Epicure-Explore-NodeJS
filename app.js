@@ -16,6 +16,7 @@ const favoriteRecipeRoutes = require('./routes/user/favorite.recipe');
 const myprofileRoutes = require('./routes/user/myprofile');
 const otherprofileRoutes = require('./routes/user/otherprofile');
 const friendshipRoutes = require('./routes/user/friendship');
+const searchRoutes = require('./routes/user/search');
 
 
 require('dotenv').config();
@@ -53,6 +54,7 @@ app.use('/notification', notificationRoutes);
 app.use('/myprofile', myprofileRoutes);
 app.use('/otherprofile', otherprofileRoutes);
 app.use('/friendship', friendshipRoutes);
+app.use('/search', searchRoutes);
 
 app.use(function (req, res, next) {
   next(createError(404));

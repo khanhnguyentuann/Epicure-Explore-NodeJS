@@ -8,6 +8,23 @@ const handleErrors = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
 };
 
+// Đánh dấu tất cả thông báo "like" là đã đọc cho một người dùng cụ thể
+router.post('/mark-all-as-read', handleErrors(async (req, res) => {
+    const userId = req.body.userId;
+
+    await knex('post_likes_notifications')
+        .where({
+            user_id: userId,
+            is_read: false
+        })
+        .update({
+            is_read: true
+        });
+
+    res.json({ success: true });
+}));
+
+
 // Đếm số thông báo "like" đã được nhóm cho một người dùng cụ thể
 router.get('/like-notifications-count', handleErrors(async (req, res) => {
     const userId = req.query.userId;
