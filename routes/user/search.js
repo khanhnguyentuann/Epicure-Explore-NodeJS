@@ -55,9 +55,38 @@ const getAllTags = async (req, res) => {
     }
 };
 
+const getAllIngredients = async (req, res) => {
+    try {
+        const ingredients = await knex('ingredients').select('*');
+        res.status(200).json({ ingredients });
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách nguyên liệu:", error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+const searchByIngredients = async (req, res) => {
+    const ingredientString = req.query.ingredients;
+    const ingredients = ingredientString.split(',').map(ingredient => ingredient.trim());
+
+    try {
+        const recipes = await knex('recipes')
+            .join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
+            .join('ingredients', 'ingredients.id', '=', 'recipe_ingredients.ingredient_id')
+            .whereIn('ingredients.name', ingredients)
+            .distinct('recipes.id', 'recipes.name')
+            .select('recipes.*');
+        res.status(200).json({ recipes });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 // Define routes
 router.get('/searchByTag', searchByTag);
 router.get('/searchByTitle', searchByTitle);
 router.get('/getAllTags', getAllTags);
+router.get('/getAllIngredients', getAllIngredients);
+router.get('/searchByIngredients', searchByIngredients);
 
 module.exports = router;
