@@ -11,10 +11,7 @@ const handleErrors = (fn) => (req, res, next) => {
 // Lấy tất cả công thức ( bài viết )
 router.get('/all', handleErrors(async (req, res) => {
     const { userId } = req.query;
-
     const newfeedRecipes = await knex('recipes').select('*').orderBy('created_at', 'DESC');
-    console.log("Fetched recipes:", newfeedRecipes);
-
 
     const recipesWithInfo = await Promise.all(newfeedRecipes.map(async (recipe) => {
         const user = await knex('users').select('name', 'avatar').where('id', recipe.user_id).first();
