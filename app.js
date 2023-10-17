@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/admin/users');
 const tagsRouter = require('./routes/admin/tags');
 const ingredientsRouter = require('./routes/admin/ingredients');
+const recipesRouter = require('./routes/admin/recipes');
 const authRouter = require('./routes/user/auth');
 const createRecipeRoutes = require('./routes/user/create.recipe');
 const newsfeedRoutes = require('./routes/user/newsfeed');
@@ -45,6 +46,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/tags', tagsRouter);
 app.use('/ingredients', ingredientsRouter);
+app.use('/recipes', recipesRouter);
 
 app.use('/auth', authRouter);
 app.use('/recipes/create', createRecipeRoutes);
