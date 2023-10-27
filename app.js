@@ -18,7 +18,7 @@ const myprofileRoutes = require('./routes/user/myprofile');
 const otherprofileRoutes = require('./routes/user/otherprofile');
 const friendshipRoutes = require('./routes/user/friendship');
 const searchRoutes = require('./routes/user/search');
-
+const chatRoutes = require('./routes/user/chatRouter');
 
 require('dotenv').config();
 
@@ -26,7 +26,7 @@ var app = express();
 
 app.use(cors({
   origin: "http://localhost:8080",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Thêm OPTIONS vào đây
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
@@ -57,6 +57,7 @@ app.use('/myprofile', myprofileRoutes);
 app.use('/otherprofile', otherprofileRoutes);
 app.use('/friendship', friendshipRoutes);
 app.use('/search', searchRoutes);
+app.use('/conversation', chatRoutes);
 
 app.use(function (req, res, next) {
   next(createError(404));
