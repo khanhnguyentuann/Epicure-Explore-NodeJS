@@ -62,7 +62,8 @@ router.get('/get-user-conversations/:userId', async (req, res) => {
                 return {
                     ...conversation,
                     otherUserName: otherUser.name,
-                    otherUserAvatar: otherUser.avatar
+                    otherUserAvatar: otherUser.avatar,
+                    otherUserId: otherUser.id,
                 };
             })));
 

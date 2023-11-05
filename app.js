@@ -19,6 +19,7 @@ const otherprofileRoutes = require('./routes/user/otherprofile');
 const friendshipRoutes = require('./routes/user/friendship');
 const searchRoutes = require('./routes/user/search');
 const chatRoutes = require('./routes/user/chatRouter');
+const userChatRoutes = require('./routes/user/user.chat');
 
 require('dotenv').config();
 
@@ -58,6 +59,7 @@ app.use('/otherprofile', otherprofileRoutes);
 app.use('/friendship', friendshipRoutes);
 app.use('/search', searchRoutes);
 app.use('/conversation', chatRoutes);
+app.use('/userchat', userChatRoutes);
 
 app.use(function (req, res, next) {
   next(createError(404));
