@@ -4,26 +4,34 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors');
+
+const http = require('http');
+const setupSocket = require('./routes/user/socket-chat');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/admin/users');
 const tagsRouter = require('./routes/admin/tags');
 const ingredientsRouter = require('./routes/admin/ingredients');
 const recipesRouter = require('./routes/admin/recipes');
-const authRouter = require('./routes/user/auth');
-const createRecipeRoutes = require('./routes/user/create.recipe');
+const authRouter = require('./routes/user/user-authentication');
+const createRecipeRoutes = require('./routes/user/create-post');
 const newsfeedRoutes = require('./routes/user/newsfeed');
 const notificationRoutes = require('./routes/user/notification');
-const favoriteRecipeRoutes = require('./routes/user/favorite.recipe');
-const myprofileRoutes = require('./routes/user/myprofile');
-const otherprofileRoutes = require('./routes/user/otherprofile');
+const favoriteRecipeRoutes = require('./routes/user/favorite-post');
+const myprofileRoutes = require('./routes/user/user-profile');
+const otherprofileRoutes = require('./routes/user/another-user-profile');
 const friendshipRoutes = require('./routes/user/friendship');
 const searchRoutes = require('./routes/user/search');
-const chatRoutes = require('./routes/user/chatRouter');
-const userChatRoutes = require('./routes/user/user.chat');
+const chatRoutes = require('./routes/user/conversation');
+const userChatRoutes = require('./routes/user/user-chat');
 
 require('dotenv').config();
 
 var app = express();
+var server = http.createServer(app); // Khởi tạo server từ app
+
+// Cài đặt và sử dụng Socket.IO
+const io = setupSocket(server); // Sử dụng hàm từ socket.js
 
 app.use(cors({
   origin: "http://localhost:8080",
@@ -31,7 +39,6 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
 
 app.use('/uploads', express.static('uploads'));
 app.set('views', path.join(__dirname, 'views'));
@@ -61,16 +68,19 @@ app.use('/search', searchRoutes);
 app.use('/conversation', chatRoutes);
 app.use('/userchat', userChatRoutes);
 
+// Catch 404 và forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
+// Error handler
 app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
+  // Render the error page
   res.status(err.status || 500);
   res.render('error');
 });
 
-module.exports = app;
+module.exports = { app, server, io };
