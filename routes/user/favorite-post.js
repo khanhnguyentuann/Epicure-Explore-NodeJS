@@ -91,7 +91,7 @@ router.get('/:id', async (req, res) => {
 
         const isLikedByCurrentUser = await knex('post_likes_notifications')
             .where({
-                user_id: userId,
+                sender_id: userId,
                 recipe_id: recipe.id,
             })
             .first();
