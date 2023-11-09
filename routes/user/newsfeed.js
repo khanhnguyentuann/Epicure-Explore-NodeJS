@@ -83,21 +83,55 @@ router.delete('/delete/:id', handleErrors(async (req, res) => {
     res.json({ message: 'Bài viết đã được xoá' });
 }));
 
-// Trả về danh sách tất cả bình luận cho một công thức ( bài viết ).
-router.get('/:recipeId/comments', handleErrors(async (req, res) => {
-    const { recipeId } = req.params;
-    const comments = await knex('comments')
-        .where('recipe_id', recipeId)
-        .join('users', 'users.id', 'comments.user_id')
-        .select('comments.id', 'comments.content', 'users.name as userName', 'users.avatar as userAvatar', 'comments.created_at', 'comments.updated_at');
-    res.status(200).send(comments);
-}));
+
+router.get('/:recipeId/comments', async (req, res) => {
+    try {
+        const { recipeId } = req.params;
+
+        // Lấy tất cả bình luận (bao gồm cả gốc và con) cho recipeId
+        let comments = await knex('comments')
+            .join('users', 'users.id', 'comments.user_id')
+            .where('recipe_id', recipeId)
+            .orWhereIn('parent_id', knex.select('id').from('comments').where('recipe_id', recipeId))
+            .select('comments.*', 'users.name as userName', 'users.avatar as userAvatar');
+
+        let commentMap = {};
+
+        comments.forEach(comment => {
+            if (comment.recipe_id) { // Nếu comment có giá trị recipe_id
+                comment.replies = [];
+                commentMap[comment.id] = comment;
+            }
+        });
+
+        comments.forEach(comment => {
+            if (comment.parent_id && commentMap[comment.parent_id]) {
+                commentMap[comment.parent_id].replies.push(comment);
+            }
+        });
+
+        // Lọc ra các bình luận gốc
+        const organizedComments = Object.values(commentMap).filter(comment => !comment.parent_id);
+
+        res.json(organizedComments);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 //  Thêm bình luận mới cho một công thức.
 router.post('/:recipeId/comments', handleErrors(async (req, res) => {
     const { params: { recipeId }, body: { userId, content } } = req;
     await knex('comments').insert({ user_id: userId, recipe_id: recipeId, content });
     res.status(201).send({ message: 'Comment added successfully' });
+}));
+
+// Thêm trả lời cho một bình luận
+router.post('/comments/:commentId/replies', handleErrors(async (req, res) => {
+    const { params: { commentId }, body: { userId, content } } = req; // sử dụng nested destructuring
+    await knex('comments').insert({ user_id: userId, content, parent_id: commentId });
+    res.status(201).send({ message: 'Reply added successfully' });
 }));
 
 // Thích một công thức

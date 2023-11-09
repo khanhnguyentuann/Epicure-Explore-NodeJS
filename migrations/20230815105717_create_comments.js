@@ -5,6 +5,7 @@ exports.up = function (knex) {
     table.integer('recipe_id').unsigned().references('id').inTable('recipes');
     table.text('content').notNullable();
     table.timestamps(true, true);
+    table.integer('parent_id').unsigned().references('id').inTable('comments').onDelete('CASCADE').nullable();
   });
 };
 

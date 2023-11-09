@@ -73,34 +73,5 @@ router.get('/get-user-conversations/:userId', async (req, res) => {
     }
 });
 
-
-// Endpoint để Gửi Tin Nhắn
-router.post('/send-message', async (req, res) => {
-    const { conversation_id, sender_id, content } = req.body;
-
-    // Logic để gửi tin nhắn và lưu vào database
-    // ...
-
-    const message = {
-        // Thông tin về tin nhắn
-    };
-
-    res.json(message);
-});
-
-// Endpoint để Lấy Tin Nhắn từ Cuộc Trò Chuyện
-router.get('/get-messages/:conversation_id', async (req, res) => {
-    const { conversation_id } = req.params;
-
-    // Logic để lấy tất cả tin nhắn từ cuộc trò chuyện
-    // ...
-
-    const messages = [
-        // Danh sách tin nhắn
-    ];
-
-    res.json(messages);
-});
-
 module.exports = router;
 
