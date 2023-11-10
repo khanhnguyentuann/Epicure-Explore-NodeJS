@@ -44,6 +44,7 @@ router.get('/all', handleErrors(async (req, res) => {
 
         const commentsCount = await knex('comments')
             .where({ recipe_id: recipe.id })
+            .orWhereIn('parent_id', knex.select('id').from('comments').where({ recipe_id: recipe.id }))
             .count('* as count')
             .first();
 

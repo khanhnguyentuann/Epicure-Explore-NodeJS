@@ -64,9 +64,9 @@ async function getUserRecipes(userId) {
 
         const commentsCount = await knex('comments')
             .where({ recipe_id: recipe.id })
+            .orWhereIn('parent_id', knex.select('id').from('comments').where({ recipe_id: recipe.id }))
             .count('* as count')
             .first();
-
 
         recipe.images = images.map(img => img.image_url);
         // Chuyển đổi chuỗi steps thành mảng
