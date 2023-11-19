@@ -7,9 +7,9 @@ const cors = require('cors');
 
 const http = require('http');
 const setupSocket = require('./routes/user/socket-chat');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/admin/users');
+const dashboardRouter = require('./routes/admin/dashboard');
+const commentsRouter = require('./routes/admin/comments');
+const usersRouter = require('./routes/admin/users');
 const tagsRouter = require('./routes/admin/tags');
 const ingredientsRouter = require('./routes/admin/ingredients');
 const recipesRouter = require('./routes/admin/recipes');
@@ -50,7 +50,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
+app.use('/dashboard', dashboardRouter);
+app.use('/comments', commentsRouter);
 app.use('/users', usersRouter);
 app.use('/tags', tagsRouter);
 app.use('/ingredients', ingredientsRouter);

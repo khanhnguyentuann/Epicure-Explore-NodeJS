@@ -51,23 +51,33 @@ router.get('/get-user-conversations/:userId', async (req, res) => {
             .where({ user1_id: userId })
             .orWhere({ user2_id: userId })
             .select('conversations.*')
-            .then(conversations => Promise.all(conversations.map(async conversation => {
-                // Xác định ID của người dùng đối diện
-                const otherUserId = conversation.user1_id === parseInt(userId) ? conversation.user2_id : conversation.user1_id;
+            .then(async conversations => {
+                const enhancedConversations = await Promise.all(conversations.map(async conversation => {
+                    // Lấy tin nhắn gần nhất của cuộc trò chuyện
+                    const latestMessage = await knex('messages')
+                        .where({ conversation_id: conversation.id })
+                        .orderBy('sent_at', 'desc')
+                        .select('content')
+                        .first();
 
-                // Lấy thông tin người dùng đối diện
-                const otherUser = await knex('users').where({ id: otherUserId }).first();
+                    // Xác định ID của người dùng đối diện
+                    const otherUserId = conversation.user1_id === parseInt(userId) ? conversation.user2_id : conversation.user1_id;
 
-                // Thêm thông tin người dùng đối diện vào cuộc trò chuyện
-                return {
-                    ...conversation,
-                    otherUserName: otherUser.name,
-                    otherUserAvatar: otherUser.avatar,
-                    otherUserId: otherUser.id,
-                };
-            })));
+                    // Lấy thông tin người dùng đối diện
+                    const otherUser = await knex('users').where({ id: otherUserId }).first();
 
-        res.json(conversations);
+                    // Thêm thông tin người dùng đối diện và tin nhắn gần nhất vào cuộc trò chuyện
+                    return {
+                        ...conversation,
+                        otherUserName: otherUser.name,
+                        otherUserAvatar: otherUser.avatar,
+                        otherUserId: otherUser.id,
+                        latestMessage: latestMessage ? latestMessage.content : null,
+                    };
+                }));
+
+                res.json(enhancedConversations);
+            });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error', error });
     }
