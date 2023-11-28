@@ -94,7 +94,7 @@ router.get('/:recipeId/comments', async (req, res) => {
             .join('users', 'users.id', 'comments.user_id')
             .where('recipe_id', recipeId)
             .orWhereIn('parent_id', knex.select('id').from('comments').where('recipe_id', recipeId))
-            .select('comments.*', 'users.name as userName', 'users.avatar as userAvatar');
+            .select('comments.*', 'users.id as userId', 'users.name as userName', 'users.avatar as userAvatar');
 
         let commentMap = {};
 

@@ -32,15 +32,12 @@ router.post('/register', async (req, res) => {
   try {
     const existingUser = await db('users').where({ email }).first();
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already in use.' });
+      return res.status(400).json({ message: 'Oops! It looks like that email is already associated with an account.' });
     }
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await db('users').insert({
-      name: username,
-      email,
-      password: hashedPassword,
-      avatar: 'uploads/default-avatar.png'
+      name: username, email, password: hashedPassword, avatar: 'uploads/default-avatar.png'
     });
     const newUser = await db('users').where({ email }).first();
     if (!newUser || newUser.length === 0) {

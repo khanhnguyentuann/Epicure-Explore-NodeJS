@@ -29,7 +29,16 @@ router.get('/conversations/:conversationId/messages', async (req, res) => {
             .where('conversation_id', conversationId)
             .orderBy('sent_at', 'asc');
 
-        res.json(messages);
+        // Đếm số lượng tin nhắn
+        const messagesCount = await knex('messages')
+            .where('conversation_id', conversationId)
+            .count('id', { as: 'total' })
+            .first();
+
+        res.json({
+            messages: messages,
+            messagesCount: messagesCount.total
+        });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error', error });
     }
