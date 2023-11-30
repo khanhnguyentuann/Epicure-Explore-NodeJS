@@ -2,6 +2,73 @@ const express = require('express');
 const router = express.Router();
 const config = require('../../knexfile').development;
 const knex = require('knex')(config);
+const multer = require('multer');
+const bcrypt = require('bcrypt');
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads/');  // Đường dẫn nơi bạn muốn lưu file
+    },
+    filename: (req, file, cb) => {
+        cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+router.put('/:userId', upload.single('avatar'), async (req, res) => {
+    console.log('Received file:', req.file);
+    console.log('Received form data:', req.body);
+    try {
+        const userId = req.params.userId;
+        const user = await knex('users').where({ id: userId }).first();
+        if (!user) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại' });
+        }
+
+        let updatedUserInfo = {};
+
+        // Kiểm tra từng trường và chỉ cập nhật nếu có sự thay đổi
+        if (req.body.name) {
+            updatedUserInfo.name = req.body.name;
+        }
+        if (req.body.email) {
+            updatedUserInfo.email = req.body.email;
+        }
+        if (req.body.password) {
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+            updatedUserInfo.password = hashedPassword;
+        }
+        if (req.file && req.file.path) {
+            updatedUserInfo.avatar = req.file.path;
+        }
+
+        // Chỉ cập nhật nếu có thông tin mới
+        if (Object.keys(updatedUserInfo).length > 0) {
+            await knex('users').where({ id: userId }).update(updatedUserInfo);
+            res.status(200).json({ message: 'Cập nhật thông tin người dùng thành công' });
+        } else {
+            res.status(400).json({ message: 'Không có thông tin để cập nhật' });
+        }
+    } catch (error) {
+        console.error('Lỗi khi cập nhật thông tin người dùng:', error);
+        res.status(500).json({ message: 'Lỗi khi cập nhật thông tin người dùng' });
+    }
+});
+
+
+// Route để lấy đường dẫn avatar dựa trên userId
+router.get('/get-new-avatar/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const avatar = await knex('users').where('id', userId).select('avatar').first();
+        res.json({ avatar });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi lấy đường dẫn avatar' });
+    }
+});
+
 
 router.get('/:userId', async (req, res) => {
     try {
