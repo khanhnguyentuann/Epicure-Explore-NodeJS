@@ -24,12 +24,12 @@ router.put('/:userId', upload.single('avatar'), async (req, res) => {
         const userId = req.params.userId;
         const user = await knex('users').where({ id: userId }).first();
         if (!user) {
-            return res.status(404).json({ message: 'Người dùng không tồn tại' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
         let updatedUserInfo = {};
 
-        // Kiểm tra từng trường và chỉ cập nhật nếu có sự thay đổi
+        // Check each field and update only if there are changes
         if (req.body.name) {
             updatedUserInfo.name = req.body.name;
         }
@@ -44,39 +44,37 @@ router.put('/:userId', upload.single('avatar'), async (req, res) => {
             updatedUserInfo.avatar = req.file.path;
         }
 
-        // Chỉ cập nhật nếu có thông tin mới
+        // Update only if there is new information
         if (Object.keys(updatedUserInfo).length > 0) {
             await knex('users').where({ id: userId }).update(updatedUserInfo);
-            res.status(200).json({ message: 'Cập nhật thông tin người dùng thành công' });
+            res.status(200).json({ message: 'User information updated successfully' });
         } else {
-            res.status(400).json({ message: 'Không có thông tin để cập nhật' });
+            res.status(400).json({ message: 'No information to update' });
         }
     } catch (error) {
-        console.error('Lỗi khi cập nhật thông tin người dùng:', error);
-        res.status(500).json({ message: 'Lỗi khi cập nhật thông tin người dùng' });
+        console.error('Error updating user information:', error);
+        res.status(500).json({ message: 'Error updating user information' });
     }
 });
 
-
-// Route để lấy đường dẫn avatar dựa trên userId
+// Route to get the avatar path based on userId
 router.get('/get-new-avatar/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
         const avatar = await knex('users').where('id', userId).select('avatar').first();
         res.json({ avatar });
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi lấy đường dẫn avatar' });
+        res.status(500).json({ message: 'Error fetching avatar path' });
     }
 });
-
 
 router.get('/:userId', async (req, res) => {
     try {
         const userRecipes = await getUserRecipes(req.params.userId);
         res.json(userRecipes);
     } catch (error) {
-        console.error("Lỗi khi lấy danh sách bài viết của người dùng:", error);
-        res.status(500).json({ message: 'Lỗi khi lấy danh sách bài viết của người dùng' });
+        console.error("Error fetching user's recipe list:", error);
+        res.status(500).json({ message: 'Error fetching user\'s recipe list' });
     }
 });
 
@@ -86,16 +84,17 @@ router.delete('/:userId/:recipeId', async (req, res) => {
     try {
         const recipe = await getRecipeById(recipeId);
         if (!recipe || recipe.user_id != userId) {
-            return res.status(403).json({ message: 'Bạn không có quyền xóa bài viết này' });
+            return res.status(403).json({ message: 'You do not have permission to delete this recipe' });
         }
 
         await deleteRecipe(recipeId);
-        res.json({ message: 'Bài viết đã được xóa thành công' });
+        res.json({ message: 'Recipe deleted successfully' });
     } catch (error) {
-        console.error("Lỗi khi xóa bài viết:", error);
-        res.status(500).json({ message: 'Lỗi khi xóa bài viết' });
+        console.error("Error deleting recipe:", error);
+        res.status(500).json({ message: 'Error deleting recipe' });
     }
 });
+
 
 async function getUserRecipes(userId) {
     const userRecipes = await knex('recipes').where('user_id', userId).orderBy('created_at', 'DESC');
