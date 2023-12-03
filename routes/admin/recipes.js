@@ -5,29 +5,15 @@ const knex = require('knex')(config);
 
 // Fetch all recipes
 router.get('/', async (req, res) => {
-    const page = parseInt(req.query.page) || 1; // lấy trang từ query, mặc định là trang 1
-    const limit = 5; // mỗi trang 5 công thức
-    const offset = (page - 1) * limit; // tính toán offset
-
     try {
         const recipes = await knex('recipes')
             .join('users', 'recipes.user_id', '=', 'users.id')
-            .limit(limit)
-            .offset(offset)
             .select('recipes.id', 'recipes.name', 'recipes.difficulty', 'users.name as creator', 'recipes.created_at');
 
-        const totalCount = await knex('recipes').count('* as count'); // lấy tổng số công thức
-        const totalPage = Math.ceil(totalCount[0].count / limit); // tính tổng số trang
-
-        res.json({
-            data: recipes,
-            pagination: {
-                current: page,
-                total: totalPage,
-            }
-        });
+        res.status(200).json(recipes);
     } catch (error) {
-        res.status(500).json({ error: 'Could not fetch recipes.' });
+        console.error('Error in fetching recipes:', error);
+        res.status(500).json({ message: 'Could not fetch recipes.' });
     }
 });
 

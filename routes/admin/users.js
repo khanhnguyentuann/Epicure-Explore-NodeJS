@@ -21,7 +21,7 @@ const upload = multer({ storage: storage });
 router.get('/', async (req, res) => {
     try {
         const users = await knex('users').select('id', 'name', 'email', 'avatar', 'join_date', 'role', 'avatar');
-        res.json(users);
+        res.status(200).json(users);
     } catch (err) {
         console.error('Error in fetching users:', err);
         res.status(500).json({ message: 'Error retrieving users' });
@@ -33,7 +33,7 @@ router.get('/:id', async (req, res) => {
         const { id } = req.params;
         const user = await knex('users').where({ id: id }).first();
         if (user) {
-            res.json(user);
+            res.status(200).json(user);
         } else {
             res.status(404).json({ message: 'User not found' });
         }
@@ -111,7 +111,7 @@ router.delete('/:id', async (req, res) => {
     try {
         // Xóa các bản ghi tham chiếu từ các bảng khác
         await knex('friendships').where({ user_id1: id }).orWhere({ user_id2: id }).del();
-        await knex('recipe_likes').where({ user_id: id }).del();
+        await knex('post_likes_notifications').where({ user_id: id }).del();
         await knex('favorite_recipes').where({ user_id: id }).del();
         await knex('comments').where({ user_id: id }).del();
         await knex('recipes').where({ user_id: id }).del();

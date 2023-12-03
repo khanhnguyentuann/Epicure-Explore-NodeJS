@@ -12,16 +12,25 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Tìm người dùng trong cơ sở dữ liệu bằng email
     const user = await db('users').where({ email }).first();
 
+    // Kiểm tra xem người dùng tồn tại và mật khẩu khớp
     if (user && bcrypt.compareSync(password, user.password)) {
-      const token = jwt.sign({ userId: user.id, role: user.role }, 'Gh7$0pQr9^jTn@2s', { expiresIn: '1h' });
+      // Tạo một JWT token với thông tin người dùng và hạn sử dụng 1 giờ
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      // Xóa mật khẩu từ thông tin người dùng trước khi trả về
       delete user.password;
+
+      // Trả về thông tin người dùng và token trong phản hồi JSON
       res.json({ user, token });
     } else {
+      // Trả về lỗi nếu email hoặc mật khẩu không hợp lệ
       res.status(400).json({ message: 'Invalid email or password.' });
     }
   } catch (error) {
+    // Xử lý lỗi và trả về lỗi 500 nếu có lỗi không mong muốn
     res.status(500).json({ message: 'An error occurred.' });
   }
 });

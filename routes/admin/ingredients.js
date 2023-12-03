@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
         const { name } = req.body;
         await knex('ingredients').insert({ name });
 
-        res.status(201).json({ message: 'Ingredient added successfully' });
+        res.status(200).json({ message: 'Ingredient added successfully' });
     } catch (err) {
         console.error('Error adding ingredient:', err);
         res.status(500).json({ message: 'Error adding ingredient' });
@@ -58,11 +58,11 @@ router.delete('/:id', async (req, res) => {
         const { id } = req.params;
 
         await knex('ingredients').where({ id }).del();
-        res.json({ success: true, message: 'Ingredient deleted successfully' });
+        res.status(200).json({ message: 'Ingredient deleted successfully' });
 
-    } catch (err) {
-        console.error('Error deleting ingredient:', err);
-        res.status(500).json({ success: false, message: 'Error deleting ingredient' });
+    } catch (error) {
+        console.error('Error deleting ingredient:', error);
+        res.status(500).json({ message: 'Error deleting ingredient' });
     }
 });
 

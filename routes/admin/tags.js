@@ -33,9 +33,9 @@ router.post('/', async (req, res) => {
         const { name } = req.body;
         await knex('tags').insert({ tag_name: name });
 
-        res.status(201).json({ message: 'Tag added successfully' });
-    } catch (err) {
-        console.error('Error adding tag:', err);
+        res.status(200).json({ message: 'Tag added successfully' });
+    } catch (error) {
+        console.error('Error adding tag:', error);
         res.status(500).json({ message: 'Error adding tag' });
     }
 });
@@ -46,7 +46,7 @@ router.put('/:id', async (req, res) => {
         const { name } = req.body;
 
         await knex('tags').where({ id }).update({ tag_name: name });
-        res.json({ message: 'Tag updated successfully' });
+        res.status(200).json({ message: 'Tag updated successfully' });
     } catch (err) {
         console.error('Error updating tag:', err);
         res.status(500).json({ message: 'Error updating tag' });
@@ -58,7 +58,7 @@ router.delete('/:id', async (req, res) => {
         const { id } = req.params;
 
         await knex('tags').where({ id }).del();
-        res.json({ success: true, message: 'Tag deleted successfully' });
+        res.status(200).json({ success: true, message: 'Tag deleted successfully' });
     } catch (err) {
         console.error('Error deleting tag:', err);
         res.status(500).json({ success: false, message: 'Error deleting tag' });
